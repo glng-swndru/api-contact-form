@@ -11,8 +11,8 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    # ports:
-    #   - "${HOST_MARIADB_PORT}:${CONT_MARIADB_PORT}"
+    ports:
+      - "${HOST_MARIADB_PORT}:${CONT_MARIADB_PORT}"
     volumes:
       - mariadb-contact-form-data:/var/lib/mysql
     networks:
