@@ -10,11 +10,14 @@ ENV GO111MODULE=on \
 # Set working directory
 WORKDIR /app
 
-# Copy the source code
-COPY . .
+# Copy go.mod and go.sum first (for caching)
+COPY go.mod go.sum ./
 
 # Download dependencies
-RUN go mod download
+RUN go mod tidy && go mod download
+
+# Copy the source code
+COPY . .
 
 # Build the application
 RUN go build -o api-contact-form .
@@ -35,16 +38,16 @@ RUN ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 WORKDIR /app
 
 # Create user and group for application
-#
-# Create a group with GID 1001
-RUN addgroup -g 1001 binarygroup
-# Create a user with UID 1001 and assign them to the 'binarygroup' group
-RUN adduser -D -u 1001 -G binarygroup userapp
+RUN addgroup -g 1001 binarygroup && \
+    adduser -D -u 1001 -G binarygroup userapp
 
 # Copy the binary from the builder stage
-COPY --from=builder --chown=userapp:binarygroup /app/api-contact-form .
+COPY --from=builder /app/api-contact-form .
 
-# Switch to the userapp user
+# Ensure the binary is executable
+RUN chmod +x api-contact-form
+
+# Switch to the non-root user
 USER userapp
 
 # Expose port 8080
